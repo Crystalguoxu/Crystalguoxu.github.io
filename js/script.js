@@ -1,68 +1,38 @@
 (function($){
+  // Search
+  var $searchWrap = $('#search-form-wrap'),
+    isSearchAnim = false,
+    searchAnimDuration = 200;
 
-  // Caption
-  $('.article-entry').each(function(i){
-    $(this).find('img').each(function(){
-      if ($(this).parent().hasClass('fancybox')) return;
+  var startSearchAnim = function(){
+    isSearchAnim = true;
+  };
 
-      var alt = this.alt;
+  var stopSearchAnim = function(callback){
+    setTimeout(function(){
+      isSearchAnim = false;
+      callback && callback();
+    }, searchAnimDuration);
+  };
 
-      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+  $('#nav-search-btn').on('click', function(){
+    if (isSearchAnim) return;
 
-      $(this).wrap('<a href="' + $(this).attr('src') + '" title="' + alt + '" class="fancybox"></a>');
-    });
-
-    $(this).find('.fancybox').each(function(){
-      $(this).attr('rel', 'article' + i);
+    startSearchAnim();
+    $searchWrap.addClass('on');
+    stopSearchAnim(function(){
+      $('.search-form-input').focus();
     });
   });
 
-  if ($.fancybox){
-    $('.fancybox').fancybox();
-  }
-
-  //Remove search input icon
-  $('input[type=search]').removeAttr('results');
-
-  function startWindowAnim(){
-    $('#header').addClass('open');
-    $('#wrap > .outer').addClass('open');
-    $('#footer').addClass('open');
-  }
-
-  //Set image scrollLoading
-  $('.article-entry img').each(function() {
-    $(this).attr('data-url', $(this).attr('src'));
-    $(this).removeAttr('src');
-    $(this).addClass('scrollLoading');
-    $(this).wrap('<div class="img-wrap"></div>');
+  $('.search-form-input').on('blur', function(){
+    startSearchAnim();
+    $searchWrap.removeClass('on');
+    stopSearchAnim();
   });
-
-  var imgCount,
-      timer = setInterval(function () {
-        if(imgCount <= 0)
-          clearInterval(timer);
-        isLoaded();
-      }, 500);
-
-  var isLoaded = function () {
-    $('.scrollLoading').each(function (i, img) {
-      if($(this).height() > 0 && $(this).parents('.img-wrap').length) {
-        if($(this).parent().hasClass('img-wrap'))
-          $(this).unwrap();
-        else
-          $(this).parent().unwrap();
-      }
-    });
-    imgCount = $('.img-wrap').length;
-  }
-
-  $('.scrollLoading').scrollLoading();
-
-  setTimeout(startWindowAnim, 1);
 
   // Share
-  $('body').on('click', function(){
+  /*$('body').on('click', function(){
     $('.article-share-box.on').removeClass('on');
   }).on('click', '.article-share-link', function(e){
     e.stopPropagation();
@@ -85,10 +55,10 @@
         '<div id="' + id + '" class="article-share-box">',
           '<input class="article-share-input" value="' + url + '">',
           '<div class="article-share-links">',
-            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
-            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
-            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
-            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+			'<a href="http://tieba.baidu.com/f/commit/share/openShareApi?url=' + encodedUrl + '" class="article-share-tieba" target="_blank" title="百度贴吧"></a>',
+			'<a href="http://service.weibo.com/share/share.php?url=' + encodedUrl + '" class="article-share-weibo" target="_blank" title="新浪微博"></a>',
+			'<a href="http://share.v.t.qq.com/index.php?c=share&a=index&url=' + encodedUrl + '" class="article-share-tqq" target="_blank" title="腾讯微博"></a>',
+			'<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '" class="article-share-renren" target="_blank" title="人人"></a>',
           '</div>',
         '</div>'
       ].join('');
@@ -113,22 +83,67 @@
     e.stopPropagation();
 
     window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+  });*/
+
+  // Caption
+  $('.article-entry').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+
+      var alt = this.alt;
+
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
   });
 
-  //Open search box
-  $('#nav-search-btn').on('click', function(){
-    $('#search-form-wrap').toggleClass('on');
-    $('#main-nav').toggleClass('off');
-  });
-  //When click other element. close search box
-  $("#wrap > .outer").on('click', function(){
-    $('#search-form-wrap').removeClass('on');
-    $('#main-nav').removeClass('off');
-  });
+  if ($.fancybox){
+    $('.fancybox').fancybox();
+  }
 
   // Mobile nav
+  var $container = $('#container'),
+    isMobileNavAnim = false,
+    mobileNavAnimDuration = 200;
+
+  var startMobileNavAnim = function(){
+    isMobileNavAnim = true;
+  };
+
+  var stopMobileNavAnim = function(){
+    setTimeout(function(){
+      isMobileNavAnim = false;
+    }, mobileNavAnimDuration);
+  }
+
   $('#main-nav-toggle').on('click', function(){
-    $('#mobile-nav').toggleClass('off');
+    if (isMobileNavAnim) return;
+
+    startMobileNavAnim();
+    $container.toggleClass('mobile-nav-on');
+    stopMobileNavAnim();
   });
 
+  $('#wrap').on('click', function(){
+    if (isMobileNavAnim || !$container.hasClass('mobile-nav-on')) return;
+
+    $container.removeClass('mobile-nav-on');
+  });
+  
+    // link
+    var $linkUl = $('#link-list');
+    var $list = $('#link-list li');
+    $linkUl.empty();
+    var count = $list.length;
+    for(var i = 0; i < count; i++)
+    {
+        var ran = Math.floor(Math.random() * $list.length);
+        $linkUl.append($list.eq(ran));
+        $list.splice(ran, 1);
+    }
 })(jQuery);
